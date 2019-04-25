@@ -19,7 +19,7 @@ library(lmtest)
 ## The first thing is to set your R session to the base directory you just downloaded from github
 ## insert path below...
 
-setwd("/Users/max.feldman/Documents/github/r.quick_castle_trv_cleanse_2019")
+#setwd("/Users/max.feldman/Documents/github/r.quick_castle_trv_cleanse_2019")
 
 setwd()
 
