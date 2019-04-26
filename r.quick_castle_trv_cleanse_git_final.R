@@ -31,7 +31,7 @@ home.dir<-getwd()
 setwd(home.dir)
 
 ## Read in data
-data<-read.csv("r.quick_trv_castle_cleanse_final.csv")
+data<-read.csv("r.quick_castle_trv_cleanse_final.csv")
 
 
 ## All nematode counts are based upon the number of nematodes present in 250 cc of soil
