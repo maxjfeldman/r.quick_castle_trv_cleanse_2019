@@ -12,6 +12,7 @@ library(Rfast)
 library(plotrix)
 library(MASS)
 library(lmtest)
+library(agricolae)
 
 ################################################
 
@@ -21,7 +22,6 @@ library(lmtest)
 
 #setwd("/Users/max.feldman/Documents/github/r.quick_castle_trv_cleanse_2019")
 
-setwd()
 
 
 ##### CREATE DIRECTORY PATHS ##### 
@@ -171,6 +171,9 @@ data.non.bait.summary<-data.non.bait.summary[,c(1:4,6,8,5,7,9)]
 
 write.csv(data.non.bait.summary, file="Table_S1.csv", quote=F, row.names=F)
 
+## Chuck Brown would like us to simplify this table. Perhaps we should keep only the three week timepoint
+
+
 data.non.bait$plant<-as.character(data.non.bait$plant)
 data.non.bait[data.non.bait$plant == "alfalfa", "plant"]<-c("Alfalfa")
 data.non.bait[data.non.bait$plant == "castle", "plant"]<-c("Castle")
@@ -179,15 +182,19 @@ data.non.bait[data.non.bait$plant == "tobacco", "plant"]<-c("Tobacco")
 colnames(data.non.bait)[c(2:4,7)]<-c("Plant", "Experiment", "Nematode_count", "Month")
 
 
-## Figure 1
+## Figure 2
 
-p<-ggplot(data.non.bait, aes(x=Month, y=Nematode_count, color=factor(Experiment))) + geom_point(size=0.2) + facet_wrap(~Plant, scales="free_y") + scale_color_manual(values=c("Orange", "Red"),name = "Experiment")
-q<-p+geom_point(data=data.non.bait.summary, aes(x=Month, y=Nematode_count, color=factor(Experiment)), shape=4, size=2)
-s<-q+geom_errorbar(data=data.non.bait.summary, aes(ymin=Nematode_count-Nematode_stderr, ymax=Nematode_count+Nematode_stderr), width=.4,position=position_dodge(0.05))
-t<-s+theme_bw() + ylab("Nematode Count (per 250 cc)")
+p<-ggplot(data.non.bait, aes(x=Month, y=Nematode_count, color=factor(Experiment))) + geom_point(size=0.4) + facet_wrap(~Plant, scales="free_y", nrow=1) + scale_color_manual(values=c("Orange", "Red"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary, aes(x=Month, y=Nematode_count, color=factor(Experiment)), shape=18, size=4)
+s<-q+geom_errorbar(data=data.non.bait.summary, aes(ymin=Nematode_count-Nematode_stderr, ymax=Nematode_count+Nematode_stderr), width=.4,position=position_dodge(0.05)) + theme_bw() + theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14))
+t<-s + ylab("Nematode Count (per 250 cc)")
 t 
 
-pdf("Figure_1.pdf")
+pdf("Figure_2_test.pdf", width=12, height=4)
+print(t)
+dev.off()
+
+pdf("Figure_2.pdf")
 print(t)
 dev.off()
 
@@ -203,12 +210,68 @@ s<-q+geom_errorbar(data=data.non.bait.summary, aes(ymin=Rf - Rf_stderr, ymax=Rf 
 t<-s+theme_bw() + ylab("Rf")
 t
 
-pdf("Figure_S1.pdf")
+x<-c(1:4)
+y<-c(1,1,1,1)
+dummy<-as.data.frame(cbind(x,y))
+
+## pretty figure for talk
+p<-ggplot(data.non.bait, aes(x=Month, y=Rf, color=factor(Experiment))) + geom_point(size=0.4) + facet_wrap(~Plant, scales="free_y", nrow=1) + scale_color_manual(values=c("blue", "navy"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary, aes(x=Month, y=Rf, color=factor(Experiment)), shape=18, size=4)
+s<-q+geom_errorbar(data=data.non.bait.summary, aes(ymin=Rf - Rf_stderr, ymax=Rf + Rf_stderr), width=.4, position=position_dodge(0.05)) + theme_bw() + theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14))
+t<-s + ylab("Rf") + geom_line(data = dummy, aes(y=y, x=x),linetype="dashed", color="red")
+t 
+
+#pdf("Figure_S1.pdf")
+#print(t)
+#dev.off()
+
+
+## Chuck Brown would prefer if we sepearte this out into two plots 
+## He's right it is almost impossible to see the effects of experiment 2
+
+## Figure S1a
+p<-ggplot(data.non.bait[data.non.bait$Experiment==1,], aes(x=Month, y=Rf, color=factor(Experiment))) + geom_point(size=0.2) + facet_wrap(~Plant, scales="free_y") + scale_color_manual(values=c("Orange", "Red"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary[data.non.bait.summary$Experiment ==1,], aes(x=Month, y=Rf, color=factor(Experiment)), shape=4, size=2)
+s<-q+geom_errorbar(data=data.non.bait.summary[data.non.bait.summary$Experiment ==1,], aes(ymin=Rf - Rf_stderr, ymax=Rf + Rf_stderr), width=.4, position=position_dodge(0.05))
+t<-s+theme_bw() + ylab("Rf")
+t
+
+p<-ggplot(data.non.bait[data.non.bait$Experiment==1,], aes(x=Month, y=Rf, color=factor(Experiment))) + geom_point(size=0.4) + facet_wrap(~Plant, scales="free_y", nrow=1) + scale_color_manual(values=c("blue", "navy"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary[data.non.bait.summary$Experiment ==1,], aes(x=Month, y=Rf, color=factor(Experiment)), shape=18, size=4)
+s<-q+geom_errorbar(data=data.non.bait.summary[data.non.bait.summary$Experiment ==1,], aes(ymin=Rf - Rf_stderr, ymax=Rf + Rf_stderr), width=.4, position=position_dodge(0.05)) + theme_bw() + theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14))
+t<-s + ylab("Rf") + geom_line(data = dummy, aes(y=y, x=x),linetype="longdash", color="red")
+t 
+
+pdf("Figure_S1a_test.pdf", width=12, height=4)
+print(t)
+dev.off()
+
+pdf("Figure_S1a.pdf")
+print(t)
+dev.off()
+
+## Figure S1b
+p<-ggplot(data.non.bait[data.non.bait$Experiment==2,], aes(x=Month, y=Rf, color=factor(Experiment))) + geom_point(size=0.2) + facet_wrap(~Plant, scales="free_y") + scale_color_manual(values=c("Red"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary[data.non.bait.summary$Experiment ==2,], aes(x=Month, y=Rf, color=factor(Experiment)), shape=4, size=2)
+s<-q+geom_errorbar(data=data.non.bait.summary[data.non.bait.summary$Experiment ==2,], aes(ymin=Rf - Rf_stderr, ymax=Rf + Rf_stderr), width=.4, position=position_dodge(0.05))
+t<-s+theme_bw() + ylab("Rf")
+t
+
+
+p<-ggplot(data.non.bait[data.non.bait$Experiment==2,], aes(x=Month, y=Rf, color=factor(Experiment))) + geom_point(size=0.4) + facet_wrap(~Plant, scales="free_y", nrow=1) + scale_color_manual(values=c("navy"),name = "Experiment")
+q<-p+geom_point(data=data.non.bait.summary[data.non.bait.summary$Experiment ==2,], aes(x=Month, y=Rf, color=factor(Experiment)), shape=18, size=4)
+s<-q+geom_errorbar(data=data.non.bait.summary[data.non.bait.summary$Experiment ==2,], aes(ymin=Rf - Rf_stderr, ymax=Rf + Rf_stderr), width=.4, position=position_dodge(0.05)) + theme_bw() + theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14))
+t<-s + ylab("Rf") + geom_line(data = dummy, aes(y=y, x=x),linetype="longdash", color="red")
+t 
+
+pdf("Figure_S1b_test.pdf", width=12, height=4)
 print(t)
 dev.off()
 
 
-
+pdf("Figure_S1b.pdf")
+print(t)
+dev.off()
 
 ################################################
 
@@ -299,7 +362,7 @@ Anova(trv.root.mdl, type=c("III"), test.statistic="LR")
 
 trv.root_anova.table<-as.data.frame(Anova(trv.root.mdl, type=c("III"), test.statistic="LR"))
 
-write.csv(trv.root_anova.table, file="Table_2a.csv", quote=F)
+write.csv(trv.root_anova.table, file="Table_3a.csv", quote=F)
 
 trv.shoot.mdl<-glm(foliage ~ plant + month + experiment, data=tester, family="binomial")
 summary(trv.shoot.mdl)
@@ -307,7 +370,7 @@ Anova(trv.shoot.mdl, type=c("III"), test.statistic="LR")
 
 trv.shoot_anova.table<-as.data.frame(Anova(trv.shoot.mdl, type=c("III"), test.statistic="LR"))
 
-write.csv(trv.shoot_anova.table, file="Table_2b.csv", quote=F)
+write.csv(trv.shoot_anova.table, file="Table_3b.csv", quote=F)
 
 
 ################################################
@@ -333,33 +396,62 @@ count_data_all_bait[count_data_all_bait$rt.pcr == "positive", "rt.pcr"]<-c("Posi
 p<-ggplot(count_data_all_bait[count_data_all_bait$experiment == 1 & count_data_all_bait$tissue == 'shoot' & as.numeric(as.character(count_data_all_bait$month)) > 1,], aes(x=month, y=count, color=rt.pcr, fill=rt.pcr)) + geom_bar(stat="identity") + facet_grid(.~plant)
 q<-p + scale_color_manual(values=c("darkgreen", "green"), guide="none") + scale_fill_manual(values=c("darkgreen", "green"), name="RT-PCR") + theme_bw() + ylab("RT-PCR Count") + xlab("Months") + ggtitle("Experiment 1")
 
-pdf("Figure_2a.pdf")
+pdf("Figure_3a.pdf")
 print(q)
+dev.off()
+
+p<-ggplot(count_data_all_bait[count_data_all_bait$experiment == 1 & count_data_all_bait$tissue == 'shoot' & as.numeric(as.character(count_data_all_bait$month)) > 1,], aes(x=month, y=count, color=rt.pcr, fill=rt.pcr)) + geom_bar(stat="identity") + facet_grid(.~plant)
+q<-p + scale_color_manual(values=c("darkgreen", "green"), guide="none") + scale_fill_manual(values=c("darkgreen", "green"), name="RT-PCR") + theme_bw() + ylab("RT-PCR Count") + xlab("Months") + ggtitle("Experiment 1")
+
+z<-q+ theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14), legend.text = element_text(size=14), legend.title = element_text(size=14), plot.title = element_text(size = 18))
+
+pdf("Figure_3a_test.pdf", width=6, height=4)
+print(z+ guides(fill=FALSE))
 dev.off()
 
 ## Experiment 1 root tissue
 p<-ggplot(count_data_all_bait[count_data_all_bait$experiment == 1 & count_data_all_bait$tissue == 'root' & as.numeric(as.character(count_data_all_bait$month)) > 1,], aes(x=month, y=count, color=rt.pcr, fill=rt.pcr)) + geom_bar(stat="identity") + facet_grid(.~plant)
 q<-p + scale_color_manual(values=c("brown", "orange"), guide="none") + scale_fill_manual(values=c("brown", "orange"), name="RT-PCR") + theme_bw() + ylab("RT-PCR Count") + xlab("Months") + ggtitle("Experiment 1")
+z<-q+ theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14), legend.text = element_text(size=14), legend.title = element_text(size=14), plot.title = element_text(size = 18))
 
-pdf("Figure_2b.pdf")
+pdf("Figure_3b.pdf")
 print(q)
+dev.off()
+
+pdf("Figure_3b_test.pdf", width=6, height=4)
+print(z+ guides(fill=FALSE))
 dev.off()
 
 ## Experiment 2 shoot tissue
 p<-ggplot(count_data_all_bait[count_data_all_bait$experiment == 2 & count_data_all_bait$tissue == 'shoot' & as.numeric(as.character(count_data_all_bait$month)) > 1,], aes(x=month, y=count, color=rt.pcr, fill=rt.pcr)) + geom_bar(stat="identity") + facet_grid(.~plant)
 q<-p + scale_color_manual(values=c("darkgreen", "green"), guide="none") + scale_fill_manual(values=c("darkgreen", "green"), name="RT-PCR") + theme_bw() + ylab("RT-PCR Count") + xlab("Months") + ggtitle("Experiment 2")
+z<-q+ theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14), legend.text = element_text(size=14), legend.title = element_text(size=14), plot.title = element_text(size = 18))
 
-pdf("Figure_2c.pdf")
+pdf("Figure_3c.pdf")
 print(q)
+dev.off()
+
+pdf("Figure_3c_test.pdf", width=6, height=4)
+print(z + guides(fill=FALSE))
 dev.off()
 
 ## Experiment 2 root tissue
 p<-ggplot(count_data_all_bait[count_data_all_bait$experiment == 2 & count_data_all_bait$tissue == 'root' & as.numeric(as.character(count_data_all_bait$month)) > 1,], aes(x=month, y=count, color=rt.pcr, fill=rt.pcr)) + geom_bar(stat="identity") + facet_grid(.~plant)
 q<-p + scale_color_manual(values=c("brown", "orange"), guide="none") + scale_fill_manual(values=c("brown", "orange"), name="RT-PCR") + theme_bw() + ylab("RT-PCR Count") + xlab("Months") + ggtitle("Experiment 2")
+z<-q+ theme(axis.title=element_text(size=18), axis.text=element_text(size=14), strip.text.x = element_text(size = 14), legend.text = element_text(size=14), legend.title = element_text(size=14), plot.title = element_text(size = 18))
 
-pdf("Figure_2d.pdf")
+pdf("Figure_3d.pdf")
 print(q)
 dev.off()
+
+pdf("Figure_3d_test.pdf", width=6, height=4)
+print(z + guides(fill=FALSE))
+dev.off()
+
+
+
+
+##########
 
 ## Lets examine the relationship between SRN number and TRV bait plant infection
 data$Rf<-as.numeric(as.character(data$Rf))
@@ -389,6 +481,185 @@ rtpcr_counts_bait<-rtpcr_counts_bait[rtpcr_counts_bait$month != 1,]
 
 ## Merge both
 count_and_nematode<-merge(rtpcr_counts_bait, data.nematode.ag,  by=c("plant", "month", "experiment"))
+
+
+
+## Chuck Brown suggested that we make Table S1 smaller and more informative
+## We will sumarize (get mean and std error) across both experiment at the final time point (3 months)
+
+data.non.bait.m3<-data.non.bait[data.non.bait$Month == 3,]
+
+## Remove columns that are non-informative
+data.non.bait.m3<-subset(data.non.bait.m3, select= -c(pot, foliage, root, Month, bait))
+
+data.non.bait.m3.mean<-aggregate(data.non.bait.m3[,c("Nematode_count", "Rf")], by=list(data.non.bait.m3$Plant,data.non.bait.m3$Experiment), mean)
+data.non.bait.m3.std.err<-aggregate(data.non.bait.m3[,c("Nematode_count", "Rf")], by=list(data.non.bait.m3$Plant,data.non.bait.m3$Experiment), std.error)
+
+colnames(data.non.bait.m3.mean)[1:2]<-c("Plant", "Experiment")
+colnames(data.non.bait.m3.std.err)<-c("Plant", "Experiment", "NC_StdErr", "Rf_StdeErr")
+
+## Now lets get summaries of the TRV count data as percentages
+
+rtpcr_counts_bait.m4<-rtpcr_counts_bait[rtpcr_counts_bait$month == 4,c(1,3,7,11)]
+colnames(rtpcr_counts_bait.m4)<-c("Plant", "Experiment", "Root_Percent_Positive", "Shoot_Percent_Positive")
+
+rtpcr_counts_bait.m4$Plant<-as.character(rtpcr_counts_bait.m4$Plant)
+rtpcr_counts_bait.m4[rtpcr_counts_bait.m4$Plant == "alfalfa","Plant"]<-c("Alfalfa")
+rtpcr_counts_bait.m4[rtpcr_counts_bait.m4$Plant == "burbank","Plant"]<-c("Burbank")
+rtpcr_counts_bait.m4[rtpcr_counts_bait.m4$Plant == "castle","Plant"]<-c("Castle")
+rtpcr_counts_bait.m4[rtpcr_counts_bait.m4$Plant == "tobacco","Plant"]<-c("Tobacco")
+
+
+
+## Combine nematode and TRV to make table
+summary_table<-merge(data.non.bait.m3.mean, data.non.bait.m3.std.err, by=c("Plant", "Experiment"))
+summary_table<-merge(summary_table, rtpcr_counts_bait.m4, by=c("Plant", "Experiment"))
+
+
+## Now lets fit models for trait and extract Tukey's Honest Significant Difference for the category Plant
+## Nematode
+data.non.bait.m3.e1<-data.non.bait[data.non.bait$Month == 3 & data.non.bait$Experiment == 1,]
+data.non.bait.m3.e2<-data.non.bait[data.non.bait$Month == 3 & data.non.bait$Experiment == 2,]
+
+## Fit model
+nematode.nb.mdl.m3.e1<-glm.nb(Nematode_count ~ Plant, data.non.bait.m3.e1)
+nematode.nb.mdl.m3.e2<-glm.nb(Nematode_count ~ Plant, data.non.bait.m3.e2)
+
+## Do Tukey's HSD
+hsd.nematode.e1<-HSD.test(nematode.nb.mdl.m3.e1, "Plant")
+hsd.nematode.e2<-HSD.test(nematode.nb.mdl.m3.e2, "Plant")
+
+## Fit model
+Rf.mdl.m3.e1<-lm(log(Rf + offset) ~ Plant, data=data.non.bait.m3.e1)
+Rf.mdl.m3.e2<-lm(log(Rf + offset) ~ Plant, data=data.non.bait.m3.e2)
+
+## Do Tukey's HSD
+hsd.rf.e1<-HSD.test(Rf.mdl.m3.e1, "Plant")
+hsd.rf.e2<-HSD.test(Rf.mdl.m3.e2, "Plant")
+
+## TRV
+tester.m4.e1<-tester[tester$month == 4 & tester$experiment == 1,]
+tester.m4.e2<-tester[tester$month == 4 & tester$experiment == 2,]
+
+trv.shoot.mdl.m4.e1<-glm(foliage ~ plant, data=tester.m4.e1, family="binomial")
+trv.shoot.mdl.m4.e2<-glm(foliage ~ plant, data=tester.m4.e2, family="binomial")
+
+## Do Tukey's HSD
+hsd.trv.shoot.e1<-HSD.test(trv.shoot.mdl.m4.e1, "plant")
+hsd.trv.shoot.e2<-HSD.test(trv.shoot.mdl.m4.e2, "plant")
+
+trv.root.mdl.m4.e1<-glm(root ~ plant, data=tester.m4.e1, family="binomial")
+trv.root.mdl.m4.e2<-glm(root ~ plant, data=tester.m4.e2, family="binomial")
+
+## Do Tukey's HSD
+hsd.trv.root.e1<-HSD.test(trv.root.mdl.m4.e1, "plant")
+hsd.trv.root.e2<-HSD.test(trv.root.mdl.m4.e2, "plant")
+
+
+## Lets add these results to the table
+
+## Nematodes
+nematode.e1<-hsd.nematode.e1$groups
+nematode.e1$Experiment<-rep("1", nrow(nematode.e1))
+nematode.e1$Plant<-rownames(nematode.e1)
+nematode.e1
+colnames(nematode.e1)[2]<-paste("NC", colnames(nematode.e1)[2], sep="_")
+nematode.e1<-nematode.e1[,c(2:4)]
+
+
+nematode.e2<-hsd.nematode.e2$groups
+nematode.e2$Experiment<-rep("2", nrow(nematode.e2))
+nematode.e2$Plant<-rownames(nematode.e2)
+nematode.e2
+colnames(nematode.e2)[2]<-paste("NC", colnames(nematode.e2)[2], sep="_")
+nematode.e2<-nematode.e2[,c(2:4)]
+
+nematode.both.e<-rbind(nematode.e1,nematode.e2)
+
+## Rf
+rf.e1<-hsd.rf.e1$groups
+rf.e1$Experiment<-rep("1", nrow(rf.e1))
+rf.e1$Plant<-rownames(rf.e1)
+colnames(rf.e1)[2]<-paste("Rf", colnames(rf.e1)[2], sep="_")
+rf.e1<-rf.e1[,c(2:4)]
+
+
+rf.e2<-hsd.rf.e2$groups
+rf.e2$Experiment<-rep("2", nrow(rf.e2))
+rf.e2$Plant<-rownames(rf.e2)
+colnames(rf.e2)[2]<-paste("Rf", colnames(rf.e2)[2], sep="_")
+rf.e2<-rf.e2[,c(2:4)]
+
+rf.both.e<-rbind(rf.e1,rf.e2)
+
+
+## TRV shoot
+trv.shoot.e1<-hsd.trv.shoot.e1$groups
+trv.shoot.e1$Experiment<-rep("1", nrow(trv.shoot.e1))
+trv.shoot.e1$Plant<-rownames(trv.shoot.e1)
+trv.shoot.e1
+colnames(trv.shoot.e1)[2]<-paste("trv_foliage", colnames(trv.shoot.e1)[2], sep="_")
+trv.shoot.e1<-trv.shoot.e1[,c(2:4)]
+
+
+trv.shoot.e2<-hsd.trv.shoot.e2$groups
+trv.shoot.e2$Experiment<-rep("2", nrow(trv.shoot.e2))
+trv.shoot.e2$Plant<-rownames(trv.shoot.e2)
+trv.shoot.e2
+colnames(trv.shoot.e2)[2]<-paste("trv_foliage", colnames(trv.shoot.e2)[2], sep="_")
+trv.shoot.e2<-trv.shoot.e2[,c(2:4)]
+
+trv.shoot.both.e<-rbind(trv.shoot.e1,trv.shoot.e2)
+
+
+## TRV root
+trv.root.e1<-hsd.trv.root.e1$groups
+trv.root.e1$Experiment<-rep("1", nrow(trv.root.e1))
+trv.root.e1$Plant<-rownames(trv.root.e1)
+colnames(trv.root.e1)[2]<-paste("trv_root", colnames(trv.root.e1)[2], sep="_")
+trv.root.e1<-trv.root.e1[,c(2:4)]
+
+trv.root.e2<-hsd.trv.root.e2$groups
+trv.root.e2$Experiment<-rep("2", nrow(trv.root.e2))
+trv.root.e2$Plant<-rownames(trv.root.e2)
+colnames(trv.root.e2)[2]<-paste("trv_root", colnames(trv.root.e2)[2], sep="_")
+trv.root.e2<-trv.root.e2[,c(2:4)]
+
+trv.root.both.e<-rbind(trv.root.e1,trv.root.e2)
+
+
+hsd_groupings<-merge(nematode.both.e, rf.both.e, by=c("Experiment", "Plant"))
+
+## Need to capitalize plant names to merge here
+trv.shoot.both.e[trv.shoot.both.e$Plant == "alfalfa", "Plant"]<-c("Alfalfa")
+trv.shoot.both.e[trv.shoot.both.e$Plant == "burbank", "Plant"]<-c("Burbank")
+trv.shoot.both.e[trv.shoot.both.e$Plant == "castle", "Plant"]<-c("Castle")
+trv.shoot.both.e[trv.shoot.both.e$Plant == "tobacco", "Plant"]<-c("Tobacco")
+
+
+hsd_groupings<-merge(hsd_groupings, trv.shoot.both.e, by=c("Experiment", "Plant"))
+
+## Need to capitalize plant names to merge here
+trv.root.both.e[trv.root.both.e$Plant == "alfalfa", "Plant"]<-c("Alfalfa")
+trv.root.both.e[trv.root.both.e$Plant == "burbank", "Plant"]<-c("Burbank")
+trv.root.both.e[trv.root.both.e$Plant == "castle", "Plant"]<-c("Castle")
+trv.root.both.e[trv.root.both.e$Plant == "tobacco", "Plant"]<-c("Tobacco")
+
+
+hsd_groupings<-merge(hsd_groupings, trv.root.both.e, by=c("Experiment", "Plant"))
+
+
+## Now we can group these data together (summary stats and hsd groups)
+hsd_summary_table<-merge(summary_table, hsd_groupings, by=c("Experiment", "Plant"))
+
+## Lets re-arrange columns to make the table look nice
+colnames(hsd_summary_table)
+hsd_summary_table<-hsd_summary_table[,c(1:3,9,5,4,10,6,8,11,7,12)]
+
+## Write out file as Table 2
+write.csv(hsd_summary_table, file="Table_2.csv", quote=F)
+
+
 
 ## check correlation
 cor.test(count_and_nematode$root_percent_pos, count_and_nematode$nematode)
